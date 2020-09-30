@@ -4,9 +4,8 @@
 
 # ------- External libraries and functions
 from math import floor
-from scipy.stats import binom
+from scipy.stats import binom, norm
 from numpy import linspace, exp, sqrt, log
-from scipy.stats import norm
 import matplotlib.pyplot as plt
 # -------
 
@@ -70,7 +69,7 @@ def black_scholes_call(S0, K, T, sigma, r):
     return(price)
 # -------
 
-# ------- Test 0
+# ------- Testing Functions
 # This section of the script is designed to test the functions crr_formula_call and
 # black-shcoles_call.
 
@@ -90,7 +89,7 @@ print(black_scholes_call(S0, K, T, sigma, r))
 # Solution: 11.6691284882873
 # -------
 
-# ------- Test 1
+# ------- Simulations
 # This section of the script is designed simulate the prices of a call
 # option using the above crr_formula_call function for n approaching infinity.
 

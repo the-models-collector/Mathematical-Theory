@@ -1,28 +1,31 @@
+# ------- Introduction
 # Copyright © 2020 pilara monkgogi moshebashebi. All rights reserved.
-# This script is designed to calculate the initial price of a call option
-# in the n_th Cox-Ross-Rubinstein (CRR) model using backward induction.
+# This script is designed to calculate the initial price of a put option in
+# the Black-Scholes and the n_th Cox-Ross-Rubinstein (CRR) models.
+# In the case of the CRR model we use backward induction.
+# -------
 
 # ------- External libraries and functions
-from numpy import linspace
-from numpy import exp, sqrt
+from scipy.stats import binom, norm
+from numpy import linspace, exp, sqrt, log
 import matplotlib.pyplot as plt
 # -------
 
 # ------- n_th CRR price function
 
 
-def crr_call_BI(S0, K, T, n, sigma, r):
+def crr_put_BI(S0, K, T, n, sigma, r):
     """
-    crr_call_BI(S0, K, T, n, sigma, r) = initial price of a plain vanilla call option
-    in the n_th crr model using backward induction 
+    crr_put_BI(S0, K, T, n, sigma, r) = initial price of a plain vanilla put option
+    in the n_th crr model using backward induction. 
 
     Function inputs:
-    S0 = initial asset price
-    K = strike pirce
-    T = expiry time
-    n = number of time steps to maturity 
-    sigma = volatility
-    r = interest rate in the n_th crr model
+    S0 = initial asset price.
+    K = strike pirce.
+    T = expiry time.
+    n = number of time steps to maturity. 
+    sigma = volatility.
+    r = interest rate in the n_th crr model.
     """
 
     # Checking input parameters
@@ -50,12 +53,10 @@ def crr_call_BI(S0, K, T, n, sigma, r):
         # ST.append(S0 * (exp((r - 0.5 * (sigma**2)) * T) + sigma *
         #                 ((N - i) * sqrt(Delta_t) + i * (-sqrt(Delta_t)))))
 
-        # ST.append(S0 * exp(sigma * ((new_u * (N - i)) + new_d * i)))
-
-    # Calculating terminal payoff of call option
+    # Calculating terminal payoff of put option
     price = []
     for i in ST:
-        price.append(max((i - K), 0))
+        price.append(max((K - i), 0))
 
     # Calculating risk neutral probabilities
     R = exp(r * Delta_t)
@@ -68,8 +69,6 @@ def crr_call_BI(S0, K, T, n, sigma, r):
 
     for i in time:
         for j in range(0, len(price) - 1):
-            # price[j] = ((q * price[j]) + (1 - q) *
-            #             price[j + 1]) / ((1 + r_dash)**(Delta_t))
             price[j] = ((q * price[j]) + (1 - q) *
                         price[j + 1]) / (R)
         price.pop()
@@ -77,8 +76,22 @@ def crr_call_BI(S0, K, T, n, sigma, r):
     return(price[0])
 # -------
 
-# ------- Test 0
-# This section of the script is designed to test the crr_call_BI function.
+# ------- Black-Scholes price function
+
+def black_scholes_put(S0, K, T, sigma, r):
+
+    # Model parameters
+    d_plus = (log(S0 / K) + (r + 0.5 * (sigma**2)) * T) / (sigma * sqrt(T))
+    d_minus = d_plus - sigma * sqrt(T)
+
+    # Put price equation in black-scholes equation
+    price = K * exp(-r * T) * norm.cdf(-d_minus) - S0 * norm.cdf(-d_plus)
+
+    return(price)
+# -------
+
+# ------- Testing Functions
+# This section of the script is designed to test the crr_put_BI function.
 
 
 # Input parameters
@@ -90,13 +103,15 @@ sigma = 0.15
 r = 0.1
 
 # Output
-print(crr_call_BI(S0, K, T, 1, sigma, r))
+print(crr_put_BI(S0, K, T, n, sigma, r))
+# Solution: 2.68715005503649
+print(black_scholes_put(S0, K, T, sigma, r))
 # Solution: 12.203408251440539
 # -------
 
-# ------- Test 1
-# This section of the script is designed simulate the prices of a call
-# option using the above crr_call_BI function for n approaching infinity.
+# ------- Simulations
+# This section of the script is designed simulate the prices of a put
+# option using the above crr_put_BI function for n approaching infinity.
 
 # Input parameters
 n = list(range(0, 101, 1))
@@ -107,18 +122,18 @@ del n[0]  # We do not have a simulation when n=0.
 prices0 = list()
 
 for i in n:
-    prices0.append(crr_call_BI(S0, K, T, i, sigma, r))
+    prices0.append(crr_put_BI(S0, K, T, i, sigma, r))
 
 # Plots
 fig, ax = plt.subplots()
 ax.plot(n, prices0, color="blue", linewidth=0.8,
-        marker=".", label="n_th CRR call price")
-ax.axhline(y=11.669128, color="green", linewidth=0.8,
-           label="Black-Scholes call price")
+        marker=".", label="n_th CRR put price")
+ax.axhline(black_scholes_put(S0, K, T, sigma, r), color="green", linewidth=0.8,
+           label="Black-Scholes put price")
 ax.set_xlabel("n (number of steps between t and T)")
-ax.set_ylabel("call option prices")
+ax.set_ylabel("Put option prices")
 ax.legend(fontsize="small")
-plt.savefig("crr_bs1")
+plt.savefig("crr_bs_put")
 plt.show()
 # -------
 

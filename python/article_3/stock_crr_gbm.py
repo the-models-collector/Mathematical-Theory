@@ -6,7 +6,7 @@ import numpy
 import random
 # -------
 
-# ------- Geometric Brownian Motion
+# ------- Stock Geometric Brownian Motion
 
 # Time parameters
 t = 0  # start time
@@ -29,11 +29,11 @@ for i in numpy.linspace(0, T, n1 + 1):
 
     w = w + ((T / n1) ** 0.5) * numpy.random.standard_normal()
     bm.append(w)
-    gm_bm.append(S0 * numpy.exp((r - 0.5 * sigma**0.5) * i + sigma * w))
+    gm_bm.append(S0 * numpy.exp((r - 0.5 * sigma**2) * i + sigma * w))
 
 # -------
 
-# ------- n_th crr model
+# ------- n_th crr stock model
 
 # Time parameters
 n0 = 10  # number of time steps in n_th crr between t and T
@@ -53,9 +53,8 @@ for i in numpy.linspace(0, T, n0 + 1):
 
     z = random.choice([step_size, -step_size])
     rw = rw + z
-    s_crr = S0 * numpy.exp((r - 0.5 * sigma**0.5) * i +
+    s_crr = S0 * numpy.exp((r - 0.5 * sigma**2) * i +
                            sigma * rw)
-    rw_vector.append(rw)
     n_crr.append(s_crr)
 # -------
 
@@ -71,7 +70,7 @@ plt.axvline(x=0, linewidth=0.8, color="black", linestyle='dashed')
 plt.axhline(y=10, linewidth=0.8, color="black", linestyle='dashed')
 plt.xlabel("time")
 plt.ylabel("stock price")
-plt.savefig("crr_gbm")
+plt.savefig("stock")
 plt.show()
 # -------
 
